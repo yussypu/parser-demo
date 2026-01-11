@@ -2,7 +2,6 @@ import streamlit as st
 import json
 import re
 
-# Insert the SignalEngine class we discussed earlier here
 class SignalEngine:
     def __init__(self):
         self.keywords = {
@@ -31,7 +30,6 @@ class SignalEngine:
             "valid": True
         }
 
-        # Viltrumite Validation Logic
         if direction == "BUY" and data['sl'] >= data['entry']:
             data['valid'] = False
             data['error'] = "Critical: SL cannot be above Entry for BUY."
@@ -41,16 +39,13 @@ class SignalEngine:
         
         return data
 
-# --- Updated Streamlit UI ---
 st.set_page_config(page_title="FX Signal Parser MVP")
 st.title("Institutional Signal Parser")
 st.markdown("### Phase 1 MVP: Telegram-to-FXBlue Bridge")
 
-# Institutional Examples Section
 st.subheader("Try a Live Example")
 col1, col2, col3 = st.columns(3)
 
-# Sample Data
 examples = {
     "English": "BUY GBPUSD @ 1.2650 | SL: 1.2600 | TP1: 1.2700 | TP2: 1.2750",
     "Dutch": "KOOP EUR/USD entry 1,0850 stop 1,0800 tp 1,0900 tp 1,0950",
@@ -89,7 +84,7 @@ if st.button("Parse & Validate Signal", type="primary"):
         else:
             st.success("Institutional Signal Normalized")
             
-            # Show a "Human Readable" summary before the JSON
+            # Human Readable summary before the JSON
             st.info(f"**Executing {result['type']} on {result['pair']}** at {result['entry']}. Protection set at {result['sl']}.")
             
             st.subheader("Developer Output (JSON)")
