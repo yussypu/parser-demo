@@ -41,29 +41,61 @@ class SignalEngine:
         
         return data
 
-# --- Streamlit UI ---
-st.set_page_config(page_title="FX Signal Parser MVP", page_icon="📈")
-st.title("⚡ Institutional Signal Parser")
-st.markdown("Proof of Concept: Telegram to FXBlue Logic Bridge")
+# --- Updated Streamlit UI ---
+st.set_page_config(page_title="FX Signal Parser MVP")
+st.title("Institutional Signal Parser")
+st.markdown("### Phase 1 MVP: Telegram-to-FXBlue Bridge")
 
-st.sidebar.header("Instructions")
-st.sidebar.info("Paste a raw signal in English, Dutch, or Spanish to see the parser normalize the data for the FXBlue API.")
+# Institutional Examples Section
+st.subheader("Try a Live Example")
+col1, col2, col3 = st.columns(3)
 
-raw_input = st.text_area("Paste Raw Telegram Signal:", placeholder="e.g., KOOP EURUSD @ 1,0850 | SL: 1,0800 | TP1: 1,0900", height=150)
+# Sample Data
+examples = {
+    "English": "BUY GBPUSD @ 1.2650 | SL: 1.2600 | TP1: 1.2700 | TP2: 1.2750",
+    "Dutch": "KOOP EUR/USD entry 1,0850 stop 1,0800 tp 1,0900 tp 1,0950",
+    "Spanish": "Venta XAUUSD entrada 2035.50 sl 2045.00 tp 2020.00"
+}
 
-if st.button("Parse Signal"):
-    engine = SignalEngine()
-    result = engine.parse_signal(raw_input)
-    
-    if result.get("valid") == False:
-        st.error(f"Validation Failed: {result.get('error')}")
-    elif result.get("status") == "Error":
-        st.warning(result.get("message"))
+# Button Logic to pre-fill the text area
+if col1.button("English"):
+    st.session_state.raw_input = examples["English"]
+if col2.button("Dutch"):
+    st.session_state.raw_input = examples["Dutch"]
+if col3.button("Spanish"):
+    st.session_state.raw_input = examples["Spanish"]
+
+# The Input Area (initialized with session state)
+if 'raw_input' not in st.session_state:
+    st.session_state.raw_input = ""
+
+raw_input = st.text_area(
+    "Paste Raw Telegram Signal:", 
+    value=st.session_state.raw_input,
+    placeholder="Paste or click an example above...", 
+    height=120
+)
+
+if st.button("Parse & Validate Signal", type="primary"):
+    if raw_input:
+        engine = SignalEngine()
+        result = engine.parse_signal(raw_input)
+        
+        if result.get("valid") == False:
+            st.error(f"Validation Failed: {result.get('error')}")
+            st.json(result)
+        elif result.get("status") == "Error":
+            st.warning(f"Partial Data Detected: {result.get('message')}")
+        else:
+            st.success("Institutional Signal Normalized")
+            
+            # Show a "Human Readable" summary before the JSON
+            st.info(f"**Executing {result['type']} on {result['pair']}** at {result['entry']}. Protection set at {result['sl']}.")
+            
+            st.subheader("Developer Output (JSON)")
+            st.json(result)
     else:
-        st.success("Signal Normalized Successfully")
-    
-    st.subheader("Normalized Output (JSON for API)")
-    st.json(result)
+        st.write("Please enter a signal or click an example above.")
 
 st.divider()
-st.caption("Built for Phase 1 MVP - Secure Backend Logic")
+st.caption("Architecture: Python Backend | Regex Normalization | FXBlue API Compatible")
